@@ -16,7 +16,10 @@ class PoiOverlay extends StatelessWidget {
     return Stack(
       children: [
         for (final entry in visiblePois)
-          Positioned(
+          AnimatedPositioned(
+            key: ValueKey(entry.key.id),
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOut,
             left: (entry.value.dx - 20).clamp(0, double.infinity),
             top: (entry.value.dy - 20).clamp(0, double.infinity),
             child: GestureDetector(

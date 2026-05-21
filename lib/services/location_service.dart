@@ -30,6 +30,10 @@ class LocationService {
   double _lastEmittedBearing = 0;
   static const double _bearingChangeThreshold = 0.5; // Solo emitir si cambia más de 0.5 grados
 
+  // Filtro de suavizado para posición GPS
+  static const int _positionSmoothingWindow = 10;
+  final List<Position> _positionBuffer = [];
+
   Future<void> initialize() async {
     if (_isInitialized) return;
 
@@ -57,15 +61,17 @@ class LocationService {
       throw Exception('GPS no está habilitado');
     }
 
-    // Stream de GPS con configuración más estable
+    // Stream de GPS con suavizado por media móvil
     _positionSubscription = Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.best,
-        distanceFilter: 15, // Cada 15 metros para menos actualizaciones
+        distanceFilter: 0, // Recibir todas las actualizaciones para suavizar
         timeLimit: Duration(seconds: 5),
       ),
     ).listen(
-      _positionController.add,
+      (position) {
+        _positionController.add(_smoothPosition(position));
+      },
       onError: (e) {
         print('Error en GPS stream: $e');
       },
@@ -198,6 +204,35 @@ class LocationService {
     const screenY = 0.5; // Centro vertical
 
     return Offset(screenX, screenHeight * screenY);
+  }
+
+  Position _smoothPosition(Position newPosition) {
+    _positionBuffer.add(newPosition);
+    if (_positionBuffer.length > _positionSmoothingWindow) {
+      _positionBuffer.removeAt(0);
+    }
+
+    // Media de latitud y longitud de las últimas posiciones
+    double sumLat = 0, sumLng = 0;
+    for (final pos in _positionBuffer) {
+      sumLat += pos.latitude;
+      sumLng += pos.longitude;
+    }
+    final avgLat = sumLat / _positionBuffer.length;
+    final avgLng = sumLng / _positionBuffer.length;
+
+    return Position(
+      latitude: avgLat,
+      longitude: avgLng,
+      timestamp: newPosition.timestamp,
+      accuracy: newPosition.accuracy,
+      altitude: newPosition.altitude,
+      altitudeAccuracy: newPosition.altitudeAccuracy,
+      heading: newPosition.heading,
+      headingAccuracy: newPosition.headingAccuracy,
+      speed: newPosition.speed,
+      speedAccuracy: newPosition.speedAccuracy,
+    );
   }
 
   double _smoothBearing(double newBearing) {
