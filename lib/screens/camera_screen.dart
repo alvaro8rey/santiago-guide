@@ -1,7 +1,9 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:santiago_guide/models/poi.dart';
 import 'package:santiago_guide/screens/poi_detail_screen.dart';
+import 'package:santiago_guide/services/camera_service.dart';
 import 'package:santiago_guide/services/location_service.dart';
 import 'package:santiago_guide/services/poi_service.dart';
 import 'package:santiago_guide/widgets/poi_overlay.dart';
@@ -17,6 +19,7 @@ class _CameraScreenState extends State<CameraScreen>
     with WidgetsBindingObserver {
   final LocationService _locationService = LocationService();
   final PoiService _poiService = PoiService();
+  final CameraService _cameraService = CameraService();
 
   List<Poi> _allPois = [];
   List<MapEntry<Poi, Offset>> _visiblePois = [];
@@ -34,6 +37,9 @@ class _CameraScreenState extends State<CameraScreen>
 
   Future<void> _initializeApp() async {
     try {
+      // Inicializar cámara
+      await _cameraService.initialize();
+
       // Inicializar servicio de ubicación
       await _locationService.initialize();
 
@@ -125,6 +131,7 @@ class _CameraScreenState extends State<CameraScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _locationService.dispose();
+    _cameraService.dispose();
     super.dispose();
   }
 
@@ -197,46 +204,41 @@ class _CameraScreenState extends State<CameraScreen>
       body: Stack(
         children: [
           // Fondo: cámara
-          Container(
-            color: Colors.black,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.amber, width: 2),
-                      color: Colors.grey[900],
+          if (_cameraService.isInitialized)
+            CameraPreview(_cameraService.controller)
+          else
+            Container(
+              color: Colors.black,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.amber, width: 2),
+                        color: Colors.grey[900],
+                      ),
+                      child: const Icon(
+                        Icons.camera_alt,
+                        size: 60,
+                        color: Colors.amber,
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.camera_alt,
-                      size: 60,
-                      color: Colors.amber,
+                    const SizedBox(height: 24),
+                    Text(
+                      'Inicializando cámara...',
+                      style: TextStyle(
+                        color: Colors.grey[400],
+                        fontSize: 16,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Cámara en tiempo real',
-                    style: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Apunta hacia un punto de interés',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
           // Overlay con marcadores
           PoiOverlay(
             visiblePois: _visiblePois,
