@@ -32,9 +32,8 @@ class CameraService {
 
       _controller = CameraController(
         camera,
-        ResolutionPreset.low,
+        ResolutionPreset.high,
         enableAudio: false,
-        imageFormatGroup: ImageFormatGroup.nv21,
       );
 
       await _controller.initialize();

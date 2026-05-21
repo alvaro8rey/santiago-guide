@@ -209,7 +209,10 @@ class _CameraScreenState extends State<CameraScreen>
           children: [
             // Fondo: cámara (fullscreen)
             if (_cameraService.isInitialized)
-              CameraPreview(_cameraService.controller)
+              Transform.scale(
+                scale: 1.0,
+                child: CameraPreview(_cameraService.controller),
+              )
             else
               Container(
                 color: Colors.black,
