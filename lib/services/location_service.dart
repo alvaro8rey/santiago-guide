@@ -24,7 +24,7 @@ class LocationService {
   int _unreliableCompassReadings = 0;
 
   // Filtro de suavizado para brújula
-  static const int _bearingSmoothingWindow = 5;
+  static const int _bearingSmoothingWindow = 12;
   final List<double> _bearingBuffer = [];
   double _smoothedBearing = 0;
 
@@ -55,12 +55,12 @@ class LocationService {
       throw Exception('GPS no está habilitado');
     }
 
-    // Stream de GPS con configuración más agresiva
+    // Stream de GPS con configuración más estable
     _positionSubscription = Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.best,
-        distanceFilter: 5, // Cada 5 metros
-        timeLimit: Duration(seconds: 5), // Timeout de 5 segundos
+        distanceFilter: 15, // Cada 15 metros para menos actualizaciones
+        timeLimit: Duration(seconds: 5),
       ),
     ).listen(
       _positionController.add,
