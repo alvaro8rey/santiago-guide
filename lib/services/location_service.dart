@@ -179,7 +179,7 @@ class LocationService {
     const fovRad = fov * pi / 180;
 
     final poiBearing = calculateBearing(userLat, userLng, poi.lat, poi.lng);
-    var angleDiff = poiBearing - bearing;
+    var angleDiff = bearing - poiBearing;
 
     // Normalizar ángulo a -180 a 180
     while (angleDiff > 180) angleDiff -= 360;
