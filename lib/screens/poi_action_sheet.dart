@@ -39,9 +39,11 @@ class _PoiActionSheetState extends State<PoiActionSheet> {
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.35,
+      initialChildSize: 0.42,
       minChildSize: 0.35,
-      maxChildSize: 0.85,
+      maxChildSize: 0.90,
+      snap: true,
+      snapSizes: const [0.35, 0.42, 0.90],
       builder: (context, scrollController) {
         return Container(
           decoration: BoxDecoration(
@@ -235,14 +237,15 @@ class _AudioPlayerState extends State<_AudioPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Icono de audio grande
+          // Icono de audio
           Container(
-            width: 100,
-            height: 100,
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.amber.withValues(alpha: 0.2),
@@ -250,12 +253,12 @@ class _AudioPlayerState extends State<_AudioPlayer> {
             ),
             child: const Icon(
               Icons.volume_up,
-              size: 50,
+              size: 40,
               color: Colors.amber,
             ),
           ),
-          const SizedBox(height: 32),
-          // Barra de progreso
+          const SizedBox(height: 20),
+          // Tiempo
           StreamBuilder<Duration>(
             stream: positionStream,
             initialData: Duration.zero,
@@ -266,74 +269,37 @@ class _AudioPlayerState extends State<_AudioPlayer> {
                 builder: (context, durationSnapshot) {
                   final position = positionSnapshot.data ?? Duration.zero;
                   final duration = durationSnapshot.data ?? Duration.zero;
-                  final progress = duration.inMilliseconds > 0
-                      ? position.inMilliseconds / duration.inMilliseconds
-                      : 0.0;
 
-                  return Column(
-                    children: [
-                      SliderTheme(
-                        data: SliderThemeData(
-                          trackHeight: 4,
-                          thumbShape: const RoundSliderThumbShape(
-                            enabledThumbRadius: 6,
-                          ),
-                        ),
-                        child: Slider(
-                          value: progress.clamp(0.0, 1.0),
-                          onChanged: (value) {
-                            widget.audioService.seek(
-                              Duration(
-                                milliseconds:
-                                    (duration.inMilliseconds * value)
-                                        .toInt(),
-                              ),
-                            );
-                          },
-                          activeColor: Colors.amber,
-                          inactiveColor: Colors.grey[700],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Row(
-                          mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              _formatDuration(position),
-                              style: TextStyle(
-                                color: Colors.grey[400],
-                                fontSize: 12,
-                              ),
-                            ),
-                            Text(
-                              _formatDuration(duration),
-                              style: TextStyle(
-                                color: Colors.grey[400],
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  return Text(
+                    '${_formatDuration(position)} / ${_formatDuration(duration)}',
+                    style: const TextStyle(
+                      color: Colors.amber,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   );
                 },
               );
             },
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
           // Botones de control
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              IconButton(
-                icon: const Icon(Icons.stop, color: Colors.amber),
-                onPressed: () => widget.audioService.stop(),
-                iconSize: 28,
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.grey[800],
+                  border: Border.all(color: Colors.amber, width: 1),
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.stop, color: Colors.amber),
+                  onPressed: () => widget.audioService.stop(),
+                  iconSize: 24,
+                ),
               ),
-              const SizedBox(width: 24),
+              const SizedBox(width: 16),
               Container(
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
@@ -350,8 +316,7 @@ class _AudioPlayerState extends State<_AudioPlayer> {
                     if (widget.audioState == AudioState.playing) {
                       widget.audioService.pause();
                     } else {
-                      widget.audioService
-                          .play(widget.poi.audioUrl);
+                      widget.audioService.play(widget.poi.audioUrl);
                     }
                   },
                   iconSize: 28,
@@ -379,7 +344,7 @@ class _InfoPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -389,12 +354,12 @@ class _InfoPanel extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               child: Image.network(
                 poi.imagenUrl,
-                height: 200,
+                height: 160,
                 width: double.infinity,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
-                    height: 200,
+                    height: 160,
                     color: Colors.grey[800],
                     child: const Icon(Icons.image_not_supported,
                         color: Colors.grey),
@@ -402,26 +367,17 @@ class _InfoPanel extends StatelessWidget {
                 },
               ),
             ),
-          if (poi.imagenUrl.isNotEmpty) const SizedBox(height: 16),
+          if (poi.imagenUrl.isNotEmpty) const SizedBox(height: 12),
           // Descripción / Transcripción
-          Text(
-            'Información',
-            style: TextStyle(
-              color: Colors.amber[400],
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
           Text(
             poi.descripcion,
             style: TextStyle(
               color: Colors.grey[300],
-              fontSize: 14,
-              height: 1.6,
+              fontSize: 13,
+              height: 1.5,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 12),
         ],
       ),
     );
