@@ -39,33 +39,19 @@ class _PoiMarker extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Pulsación exterior
-        Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.amber.withValues(alpha: 0.3),
-              width: 2,
-            ),
-          ),
-        ),
-        const SizedBox(height: 4),
-        // Marcador principal
+        // Marcador principal (40x40)
         Container(
           width: 40,
           height: 40,
-          margin: const EdgeInsets.only(top: -44),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.amber,
             border: Border.all(color: Colors.white, width: 2),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+                color: Colors.black.withValues(alpha: 0.4),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
               ),
             ],
           ),
@@ -75,7 +61,22 @@ class _PoiMarker extends StatelessWidget {
             size: 22,
           ),
         ),
-        const SizedBox(height: 8),
+        // Pulsación exterior (efecto anillo)
+        Transform.translate(
+          offset: const Offset(0, -35),
+          child: Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.amber.withValues(alpha: 0.3),
+                width: 2,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
         // Nombre del POI
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
