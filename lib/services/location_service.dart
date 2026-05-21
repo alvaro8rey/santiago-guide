@@ -23,6 +23,11 @@ class LocationService {
   double _lastKnownBearing = 0;
   int _unreliableCompassReadings = 0;
 
+  // Filtro de suavizado para brújula
+  static const int _bearingSmoothingWindow = 5;
+  final List<double> _bearingBuffer = [];
+  double _smoothedBearing = 0;
+
   Future<void> initialize() async {
     if (_isInitialized) return;
 
@@ -64,20 +69,21 @@ class LocationService {
       },
     );
 
-    // Stream de brújula con filtro de confiabilidad
+    // Stream de brújula con filtro de confiabilidad y suavizado
     if (FlutterCompass.events != null) {
       _compassSubscription = FlutterCompass.events!.listen(
         (CompassEvent event) {
           // Ignorar datos no confiables
           if (event.accuracy != null && event.accuracy! < 0) {
             _unreliableCompassReadings++;
-            print('Brújula no confiable. Recalibra el dispositivo');
             // Usar última posición conocida
             _bearingController.add(_lastKnownBearing);
           } else if (event.heading != null) {
             _unreliableCompassReadings = 0;
-            _lastKnownBearing = event.heading!;
-            _bearingController.add(event.heading!);
+            // Aplicar suavizado a los datos de brújula
+            final smoothed = _smoothBearing(event.heading!);
+            _lastKnownBearing = smoothed;
+            _bearingController.add(smoothed);
           }
         },
         onError: (e) {
@@ -190,6 +196,30 @@ class LocationService {
     const screenY = 0.5; // Centro vertical
 
     return Offset(screenX, screenHeight * screenY);
+  }
+
+  double _smoothBearing(double newBearing) {
+    // Normalizar diferencia angular
+    var diff = newBearing - _smoothedBearing;
+    while (diff > 180) diff -= 360;
+    while (diff < -180) diff += 360;
+
+    // Aplicar suavizado
+    _bearingBuffer.add(newBearing);
+    if (_bearingBuffer.length > _bearingSmoothingWindow) {
+      _bearingBuffer.removeAt(0);
+    }
+
+    // Media circular de los últimos valores
+    double sumSin = 0, sumCos = 0;
+    for (final bearing in _bearingBuffer) {
+      sumSin += sin(_toRad(bearing));
+      sumCos += cos(_toRad(bearing));
+    }
+    _smoothedBearing = _toDeg(atan2(sumSin, sumCos));
+    if (_smoothedBearing < 0) _smoothedBearing += 360;
+
+    return _smoothedBearing;
   }
 
   static double _toRad(double deg) => deg * pi / 180;
