@@ -238,26 +238,10 @@ class _AudioPlayerState extends State<_AudioPlayer> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Icono de audio
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.amber.withValues(alpha: 0.2),
-              border: Border.all(color: Colors.amber, width: 2),
-            ),
-            child: const Icon(
-              Icons.volume_up,
-              size: 40,
-              color: Colors.amber,
-            ),
-          ),
-          const SizedBox(height: 20),
           // Tiempo
           StreamBuilder<Duration>(
             stream: positionStream,
@@ -272,35 +256,35 @@ class _AudioPlayerState extends State<_AudioPlayer> {
 
                   return Text(
                     '${_formatDuration(position)} / ${_formatDuration(duration)}',
-                    style: const TextStyle(
-                      color: Colors.amber,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                    style: TextStyle(
+                      color: Colors.amber[400],
+                      fontSize: 14,
                     ),
                   );
                 },
               );
             },
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 12),
           // Botones de control
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.grey[800],
-                  border: Border.all(color: Colors.amber, width: 1),
-                ),
+              SizedBox(
+                width: 40,
+                height: 40,
                 child: IconButton(
                   icon: const Icon(Icons.stop, color: Colors.amber),
                   onPressed: () => widget.audioService.stop(),
-                  iconSize: 24,
+                  iconSize: 18,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                 ),
               ),
               const SizedBox(width: 16),
               Container(
+                width: 48,
+                height: 48,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.amber,
@@ -319,7 +303,9 @@ class _AudioPlayerState extends State<_AudioPlayer> {
                       widget.audioService.play(widget.poi.audioUrl);
                     }
                   },
-                  iconSize: 28,
+                  iconSize: 22,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                 ),
               ),
             ],
