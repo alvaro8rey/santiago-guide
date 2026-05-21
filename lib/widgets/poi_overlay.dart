@@ -17,8 +17,8 @@ class PoiOverlay extends StatelessWidget {
       children: [
         for (final entry in visiblePois)
           Positioned(
-            left: entry.value.dx - 20,
-            top: entry.value.dy - 20,
+            left: (entry.value.dx - 20).clamp(0, double.infinity),
+            top: (entry.value.dy - 20).clamp(0, double.infinity),
             child: GestureDetector(
               onTap: () => onPoiTap(entry.key),
               child: _PoiMarker(poi: entry.key),

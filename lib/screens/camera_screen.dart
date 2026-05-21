@@ -198,16 +198,40 @@ class _CameraScreenState extends State<CameraScreen>
         children: [
           // Fondo: cámara
           Container(
-            color: Colors.grey[900],
+            color: Colors.black,
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.videocam, size: 64, color: Colors.grey[700]),
-                  const SizedBox(height: 16),
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.amber, width: 2),
+                      color: Colors.grey[900],
+                    ),
+                    child: const Icon(
+                      Icons.camera_alt,
+                      size: 60,
+                      color: Colors.amber,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                   Text(
                     'Cámara en tiempo real',
-                    style: TextStyle(color: Colors.grey[600]),
+                    style: TextStyle(
+                      color: Colors.grey[400],
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Apunta hacia un punto de interés',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
@@ -231,7 +255,7 @@ class _CameraScreenState extends State<CameraScreen>
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withValues(alpha: 0.5),
+                      Colors.black.withValues(alpha: 0.7),
                       Colors.transparent,
                     ],
                   ),
@@ -249,10 +273,40 @@ class _CameraScreenState extends State<CameraScreen>
                     ),
                     const SizedBox(height: 8),
                     if (_currentPosition != null)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Lat: ${_currentPosition!.latitude.toStringAsFixed(6)}',
+                            style: TextStyle(
+                              color: Colors.grey[400],
+                              fontSize: 11,
+                              fontFamily: 'monospace',
+                            ),
+                          ),
+                          Text(
+                            'Lng: ${_currentPosition!.longitude.toStringAsFixed(6)}',
+                            style: TextStyle(
+                              color: Colors.grey[400],
+                              fontSize: 11,
+                              fontFamily: 'monospace',
+                            ),
+                          ),
+                          Text(
+                            'Brújula: ${_currentBearing.toStringAsFixed(1)}°',
+                            style: TextStyle(
+                              color: Colors.amber,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      )
+                    else
                       Text(
-                        'Brújula: ${_currentBearing.toStringAsFixed(0)}°',
+                        'Obteniendo ubicación...',
                         style: TextStyle(
-                          color: Colors.grey[400],
+                          color: Colors.orange[300],
                           fontSize: 12,
                         ),
                       ),
