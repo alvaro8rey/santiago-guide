@@ -20,6 +20,8 @@ class LocationService {
   StreamSubscription<CompassEvent>? _compassSubscription;
 
   bool _isInitialized = false;
+  double _lastKnownBearing = 0;
+  int _unreliableCompassReadings = 0;
 
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -62,18 +64,30 @@ class LocationService {
       },
     );
 
-    // Stream de brújula con mejor manejo de errores
+    // Stream de brújula con filtro de confiabilidad
     if (FlutterCompass.events != null) {
       _compassSubscription = FlutterCompass.events!.listen(
         (CompassEvent event) {
-          if (event.heading != null) {
+          // Ignorar datos no confiables
+          if (event.accuracy != null && event.accuracy! < 0) {
+            _unreliableCompassReadings++;
+            print('Brújula no confiable. Recalibra el dispositivo');
+            // Usar última posición conocida
+            _bearingController.add(_lastKnownBearing);
+          } else if (event.heading != null) {
+            _unreliableCompassReadings = 0;
+            _lastKnownBearing = event.heading!;
             _bearingController.add(event.heading!);
           }
         },
         onError: (e) {
           print('Error en brújula stream: $e');
+          // En caso de error, mantener última posición
+          _bearingController.add(_lastKnownBearing);
         },
       );
+    } else {
+      print('FlutterCompass no disponible en este dispositivo');
     }
 
     _isInitialized = true;
