@@ -201,49 +201,53 @@ class _CameraScreenState extends State<CameraScreen>
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          // Fondo: cámara
-          if (_cameraService.isInitialized)
-            CameraPreview(_cameraService.controller)
-          else
-            Container(
-              color: Colors.black,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.amber, width: 2),
-                        color: Colors.grey[900],
+      body: SizedBox(
+        width: double.infinity,
+        height: double.infinity,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Fondo: cámara (fullscreen)
+            if (_cameraService.isInitialized)
+              CameraPreview(_cameraService.controller)
+            else
+              Container(
+                color: Colors.black,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.amber, width: 2),
+                          color: Colors.grey[900],
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt,
+                          size: 60,
+                          color: Colors.amber,
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.camera_alt,
-                        size: 60,
-                        color: Colors.amber,
+                      const SizedBox(height: 24),
+                      Text(
+                        'Inicializando cámara...',
+                        style: TextStyle(
+                          color: Colors.grey[400],
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Inicializando cámara...',
-                      style: TextStyle(
-                        color: Colors.grey[400],
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
+            // Overlay con marcadores
+            PoiOverlay(
+              visiblePois: _visiblePois,
+              onPoiTap: _showPoiDetail,
             ),
-          // Overlay con marcadores
-          PoiOverlay(
-            visiblePois: _visiblePois,
-            onPoiTap: _showPoiDetail,
-          ),
           // Información superior (simplificada)
           Positioned(
             top: 0,
@@ -356,7 +360,8 @@ class _CameraScreenState extends State<CameraScreen>
                 ),
               ),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }
