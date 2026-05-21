@@ -24,9 +24,11 @@ class LocationService {
   int _unreliableCompassReadings = 0;
 
   // Filtro de suavizado para brújula
-  static const int _bearingSmoothingWindow = 12;
+  static const int _bearingSmoothingWindow = 25;
   final List<double> _bearingBuffer = [];
   double _smoothedBearing = 0;
+  double _lastEmittedBearing = 0;
+  static const double _bearingChangeThreshold = 0.5; // Solo emitir si cambia más de 0.5 grados
 
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -199,11 +201,6 @@ class LocationService {
   }
 
   double _smoothBearing(double newBearing) {
-    // Normalizar diferencia angular
-    var diff = newBearing - _smoothedBearing;
-    while (diff > 180) diff -= 360;
-    while (diff < -180) diff += 360;
-
     // Aplicar suavizado
     _bearingBuffer.add(newBearing);
     if (_bearingBuffer.length > _bearingSmoothingWindow) {
@@ -219,7 +216,16 @@ class LocationService {
     _smoothedBearing = _toDeg(atan2(sumSin, sumCos));
     if (_smoothedBearing < 0) _smoothedBearing += 360;
 
-    return _smoothedBearing;
+    // Solo emitir si cambió más del threshold
+    var changeDiff = (_smoothedBearing - _lastEmittedBearing).abs();
+    if (changeDiff > 180) changeDiff = 360 - changeDiff;
+
+    if (changeDiff >= _bearingChangeThreshold) {
+      _lastEmittedBearing = _smoothedBearing;
+      return _smoothedBearing;
+    }
+
+    return _lastEmittedBearing;
   }
 
   static double _toRad(double deg) => deg * pi / 180;
