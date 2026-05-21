@@ -2,7 +2,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:santiago_guide/models/poi.dart';
-import 'package:santiago_guide/screens/poi_detail_screen.dart';
+import 'package:santiago_guide/screens/poi_action_sheet.dart';
 import 'package:santiago_guide/services/camera_service.dart';
 import 'package:santiago_guide/services/location_service.dart';
 import 'package:santiago_guide/services/poi_service.dart';
@@ -109,7 +109,7 @@ class _CameraScreenState extends State<CameraScreen>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => PoiDetailScreen(poi: poi),
+      builder: (context) => PoiActionSheet(poi: poi),
     );
   }
 
@@ -244,152 +244,118 @@ class _CameraScreenState extends State<CameraScreen>
             visiblePois: _visiblePois,
             onPoiTap: _showPoiDetail,
           ),
-          // Información superior
+          // Información superior (simplificada)
           Positioned(
             top: 0,
             left: 0,
             right: 0,
             child: SafeArea(
               child: Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withValues(alpha: 0.7),
+                      Colors.black.withValues(alpha: 0.6),
                       Colors.transparent,
                     ],
                   ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
                       'Santiago Guide',
                       style: TextStyle(
                         color: Colors.amber,
-                        fontSize: 24,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 8),
                     if (_currentPosition != null)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.check_circle,
-                                color: Colors.green,
-                                size: 14,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withValues(alpha: 0.2),
+                          border: Border.all(
+                            color: Colors.green,
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.location_on,
+                              color: Colors.green,
+                              size: 12,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'GPS OK',
+                              style: TextStyle(
+                                color: Colors.green[300],
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'GPS Activo',
-                                style: TextStyle(
-                                  color: Colors.green[300],
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Lat: ${_currentPosition!.latitude.toStringAsFixed(6)}',
-                            style: TextStyle(
-                              color: Colors.grey[400],
-                              fontSize: 10,
-                              fontFamily: 'monospace',
                             ),
-                          ),
-                          Text(
-                            'Lng: ${_currentPosition!.longitude.toStringAsFixed(6)}',
-                            style: TextStyle(
-                              color: Colors.grey[400],
-                              fontSize: 10,
-                              fontFamily: 'monospace',
-                            ),
-                          ),
-                          Text(
-                            'Brújula: ${_currentBearing.toStringAsFixed(1)}°',
-                            style: TextStyle(
-                              color: Colors.amber,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       )
                     else
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 12,
-                            height: 12,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 1.5,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.orange[300]!,
-                              ),
-                            ),
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 1.5,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.orange[300]!,
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Obteniendo ubicación...',
-                            style: TextStyle(
-                              color: Colors.orange[300],
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                   ],
                 ),
               ),
             ),
           ),
-          // Información inferior
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.7),
-                    Colors.transparent,
-                  ],
+          // Información inferior (minimalista)
+          if (_visiblePois.isNotEmpty)
+            Positioned(
+              bottom: 20,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.7),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.amber.withValues(alpha: 0.5),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    '${_visiblePois.length} punto${_visiblePois.length == 1 ? '' : 's'} disponible${_visiblePois.length == 1 ? '' : 's'}',
+                    style: const TextStyle(
+                      color: Colors.amber,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Puntos de interés visibles: ${_visiblePois.length}',
-                    style: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Total cargados: ${_allPois.length}',
-                    style: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
             ),
-          ),
         ],
       ),
     );
