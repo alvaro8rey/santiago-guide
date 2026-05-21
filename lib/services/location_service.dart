@@ -27,29 +27,54 @@ class LocationService {
     _positionController = StreamController<Position>.broadcast();
     _bearingController = StreamController<double>.broadcast();
 
-    // Solicitar permisos de ubicación
-    final permission = await Geolocator.requestPermission();
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
+    // Verificar y solicitar permisos de ubicación
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      throw Exception('Permiso de ubicación denegado permanentemente');
+    }
+
+    if (permission == LocationPermission.denied) {
       throw Exception('Permiso de ubicación denegado');
     }
 
-    // Stream de GPS
+    // Verificar que GPS esté habilitado
+    final isLocationServiceEnabled =
+        await Geolocator.isLocationServiceEnabled();
+    if (!isLocationServiceEnabled) {
+      throw Exception('GPS no está habilitado');
+    }
+
+    // Stream de GPS con configuración más agresiva
     _positionSubscription = Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.best,
-        distanceFilter: 10,
+        distanceFilter: 5, // Cada 5 metros
+        timeLimit: Duration(seconds: 5), // Timeout de 5 segundos
       ),
-    ).listen(_positionController.add);
-
-    // Stream de brújula
-    _compassSubscription = FlutterCompass.events?.listen(
-      (CompassEvent event) {
-        if (event.heading != null) {
-          _bearingController.add(event.heading!);
-        }
+    ).listen(
+      _positionController.add,
+      onError: (e) {
+        print('Error en GPS stream: $e');
       },
     );
+
+    // Stream de brújula con mejor manejo de errores
+    if (FlutterCompass.events != null) {
+      _compassSubscription = FlutterCompass.events!.listen(
+        (CompassEvent event) {
+          if (event.heading != null) {
+            _bearingController.add(event.heading!);
+          }
+        },
+        onError: (e) {
+          print('Error en brújula stream: $e');
+        },
+      );
+    }
 
     _isInitialized = true;
   }

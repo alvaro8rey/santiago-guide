@@ -278,11 +278,30 @@ class _CameraScreenState extends State<CameraScreen>
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.check_circle,
+                                color: Colors.green,
+                                size: 14,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'GPS Activo',
+                                style: TextStyle(
+                                  color: Colors.green[300],
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
                           Text(
                             'Lat: ${_currentPosition!.latitude.toStringAsFixed(6)}',
                             style: TextStyle(
                               color: Colors.grey[400],
-                              fontSize: 11,
+                              fontSize: 10,
                               fontFamily: 'monospace',
                             ),
                           ),
@@ -290,7 +309,7 @@ class _CameraScreenState extends State<CameraScreen>
                             'Lng: ${_currentPosition!.longitude.toStringAsFixed(6)}',
                             style: TextStyle(
                               color: Colors.grey[400],
-                              fontSize: 11,
+                              fontSize: 10,
                               fontFamily: 'monospace',
                             ),
                           ),
@@ -298,19 +317,34 @@ class _CameraScreenState extends State<CameraScreen>
                             'Brújula: ${_currentBearing.toStringAsFixed(1)}°',
                             style: TextStyle(
                               color: Colors.amber,
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       )
                     else
-                      Text(
-                        'Obteniendo ubicación...',
-                        style: TextStyle(
-                          color: Colors.orange[300],
-                          fontSize: 12,
-                        ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 12,
+                            height: 12,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 1.5,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.orange[300]!,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Obteniendo ubicación...',
+                            style: TextStyle(
+                              color: Colors.orange[300],
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
                       ),
                   ],
                 ),
