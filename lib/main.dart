@@ -70,14 +70,21 @@ class _PermissionScreenState extends State<PermissionScreen> {
   }
 
   Future<void> _requestPermissions() async {
+    // Request camera permission first
     final cameraStatus = await Permission.camera.request();
-    final locationStatus = await Permission.location.request();
 
     setState(() {
       _cameraGranted = cameraStatus.isGranted;
+    });
+
+    // Request location permission after camera
+    final locationStatus = await Permission.location.request();
+
+    setState(() {
       _locationGranted = locationStatus.isGranted;
     });
 
+    // Only navigate if both permissions are granted
     if (_cameraGranted && _locationGranted) {
       if (mounted) {
         Navigator.of(context).pushReplacementNamed('/camera');
